@@ -17,12 +17,11 @@ I suppose you could also add each one as a .js file but I feel like that creates
 too many files and defeats the purpose of a single modularized .js file
 */
 !(function(){
-var $start = '<div class="screen screen-start" id="start"> <header> <h1>Tic Tac Toe</h1>' /*<a href="#" class="button computer">Play Against Computer</a><br><br>*/+'<a href="#" class="button player">Play Against Player</a> </header> </div>';
+var $start = '<div class="screen screen-start" id="start"> <header> <h1>Tic Tac Toe</h1><a href="#" class="button computer">Play Against Computer</a><br><br><a href="#" class="button player">Play Against Player</a> </header> </div>';
 var $win = '<div class="screen screen-win" id="finish"> <header> <h1>Tic Tac Toe</h1> <p class="message"></p> <a href="#" class="button">New game</a> </header></div>';
 var $board = '<div class="board" id="board"> <header> <h1>Tic Tac Toe</h1> <ul>';
-var againstPlayer; //whether or not it's agains player or AI
+var againstPlayer; //whether or not it's against player or AI
 var activePlayer; //active player
-var winner; //none for active game, one/two for player one/two, tie for a tie
 var nameOne; //first players Name
 var nameTwo; //second players Name
 var moveCount;
@@ -34,19 +33,20 @@ $board +='</ul> </header> <ul class="boxes"> <li class="box"></li> <li class="bo
 var toStart = function(){ //resets to the start page and adds event listeners
   $('document').ready(function(){ //ensures all portions reloaded
     $('body').html($start);
+
     $('.computer').on('click', function(){ //if computer clicked, will use AI for playing
       againstPlayer = false;
       initialize(); //starts board
       nameOne = prompt('Please enter Your Name:')
-      nameTwo = 'SkyNet';
+      nameTwo = 'COMPUTER';
     });
+
     $('.player').on('click',function(){ //allows two human players
       initialize(); //starts board
       againstPlayer = true;
       nameOne = prompt('Please enter Player One\'s Name:')
       nameTwo = prompt('Please enter Player Two\'s Name:')
     });
-    console.log('ready');
   });
 };
 
@@ -56,9 +56,8 @@ function initialize(){
     $('.box').on('click', placeMove); //addsEventlisteners to ensure click funcionality works
     $('.player1').addClass('active'); //in case of restart
     $('.player2').removeClass('active'); //in case of restart resets starting player
-    activePlayer =1; //starts back with active player being 1
+    activePlayer = 1; //starts back with active player being 1
     boardState = [[0,0,0],[0,0,0],[0,0,0]]; //resets board
-    winner = 0;
     moveCount = 0; //resets move count to 0 for checking for Tie
   });
 }
@@ -69,87 +68,97 @@ function initialize(){
       $('.players').toggleClass('active'); //switches active player
         $(this).addClass('box-filled-'+activePlayer);
         updateBoard($(this).index());//updates the board for both AI and win verification passes current index
-        if(activePlayer === 1){activePlayer = 2;}
-        else{activePlayer = 1;} //changes player
+        activePlayer === 1 ? activePlayer = 2 : activePlayer = 1;
       }
-
-      if(winner ===0){ //if no winner, change players and go again
-        if(activePlayer ===2 && !againstPlayer){ //auto plays if against computer
+      if(activePlayer ===2 && !againstPlayer && checkWinner()==0){ //auto plays if against computer
           computerMove();
+
         }
-      }
-      else{ endGame();} // if a winner or tie, it ends the game
+      if (checkWinner() != 0){
+        endGame(checkWinner())
+      };
+
     };
 
   var computerMove = function(){
-    console.log('this is the computer\'s move'); //still implementing
+    for (var m=0; m<3; m++){ //passes through each square to check for block or win
+      for (var j=0; j<3; j++){
+        for(var k=2; k>=1; k--){ //tests the block with a move for both comp and player
+          if(boardState[m][j] ===0){ //ensures only empty blocks are selected
+            boardState[m][j]=k; //sets it as active player to test
+            if(checkWinner() !== 0){ // if results in a win on either side then clicks
+              $('.boxes').children()[m*3+j].click(); //activates click
+              return; //exits out after move
+            }
+            boardState[m][j] = 0;
+          }
+        }
+      }
+    }
+    if(boardState[1][1]===0){$('.boxes').children()[4].click(); return;}//chooses middle if no block/win
+    else{ //chooses random starting spot if center is taken
+      var x = Math.floor(Math.random() * 2); //selects random x coordinate
+      var y = Math.floor(Math.random() * 2); //selects random y coordinate
+      while(boardState[x][y] !=0){ // assures it doesn't select the middle square
+        x = Math.floor(Math.random() * 2); //re-randomizes x
+        y = Math.floor(Math.random() * 2); //re-randomizes y
+      }
+      $('.boxes').children()[x*3+y].click(); //plays at the random spot
+    }
   };
 
 
   var updateBoard = function(item){ //updates a 2-D array version of the board
-    console.log('The current index is'+item)
     index = Math.floor(item / 3); //gets first coordinate
     place = item - (index*3); //gets second coordinate
     boardState[index][place] = activePlayer //sets that point as a number equal to active player 1 or 2
     moveCount++; //adds another move for easy tie checking
-    checkWinner();
+
   }
 
 
   var checkWinner = function() { //takes current board setup and checks for winner
-    if(moveCount < 9){
       for(i=0; i<3; i++){ //checks for horizontal lines then vertical lines
           if(boardState[i][0] === boardState[i][1] && boardState[i][0] === boardState[i][2] && boardState[i][0] !== 0){
-              winner = boardState[i][0];
+              return(boardState[i][0]);
           }
           if(boardState[0][i] === boardState[1][i] && boardState[0][i] === boardState[2][i] && boardState[0][i] !== 0){
-              winner = boardState[0][i];
+              return(boardState[0][i]);
           }
       }
-      if(boardState[0][0] === boardState[1][1] && boardState[0][0] === boardState[2][2] && boardState[0][i] !== 0){ //checks one diagonal
-          winner = boardState[1][1];
+      if(boardState[0][0] === boardState[1][1] && boardState[0][0] === boardState[2][2] && boardState[1][1] !== 0){ //checks one diagonal
+          return(boardState[1][1]);
       }
-      if(boardState[0][2] === boardState[1][1] && boardState[2][0] === boardState[1][1] && boardState[0][i] !== 0){//checks one diagonal
-          winner = boardState[1][1];
+      if(boardState[0][2] === boardState[1][1] && boardState[2][0] === boardState[1][1] && boardState[1][1] !== 0){//checks one diagonal
+          return(boardState[1][1]);
       }
-    } else{ winner = 3;}
-
+      if (moveCount=== 9){ return 3;}
+      console.log(moveCount);
+    return 0;
   };
 
 
-  var endGame = function(){
+  var endGame = function(winner){
     $('body').html($win); //loads win snippet
     $('document').ready(function(){
       //ensures loaded before adding event listeners and adjusting html
       //shoudln't be needed really but hey.
-      var winningClass;
       if (winner ===1) {
-        changeHTML($('.message'), nameOne); //verifies non-blank name and returns
-        winningClass = 'screen-win-one';
+        nameOne ? $('.message').html(nameOne+' wins!'): $('.message').html('Winner!');
+        $('.screen-win').addClass('screen-win-one');
       }
       else if(winner===2)
       {
-        changeHTML($('.message'), nameTwo);
-        winningClass = 'screen-win-two';
+        nameTwo ? $('.message').html(nameTwo+' wins!'): $('.message').html('Winner!');
+        $('.screen-win').addClass('screen-win-two');
       }
-      else {
+      else if(winner===3) {
         $('.message').html('It\'s a Tie!');
-        winningClass ='screen-win-tie'
+        $('.screen-win').addClass('screen-win-tie');
         }
       $('.button').on('click', toStart);
-      $('.screen-win').addClass(winningClass);
     });
   };
-
-  function changeHTML(toChange, toVerify){ //this ensures if they didn't input a name, it doesn't display blank
-    if(toVerify){
-      $(toChange).html(toVerify+' wins!');
-    }
-    else{$(toChange).html('Winner!');} //if blank name, just displays original Winner!
-
-
-  };
-
 
 toStart();
 }())
