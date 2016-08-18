@@ -96,6 +96,7 @@ function initialize(){
       }
       currentBoard[availMoves[i]] = 0; //resets the move to test a different one
     }
+      console.log('----------------------');
      $('.boxes').children()[availMoves[index]].click(); //clicks the box that resulted in highest line scores
 
     function evaluateTotalScore(){ //goes through line by line to get sum of score
@@ -108,6 +109,7 @@ function initialize(){
       score += checkLine(2,5,8); //checks vertical line
       score += checkLine(0,4,8); //checks diagonal line
       score += checkLine(2,4,6); //checks diagonal line
+      console.log(score);
       return score; //returns score for comparison
     };
 
@@ -141,8 +143,8 @@ function initialize(){
            lineScore = 1; // if first was empty and this was X score to 1 as a win is possible
         }
      } else if (currentBoard[b] == 1) { //if b was O
-        if (lineScore == -1) { //if a and b were O, this is a bad line, set score to -10
-           lineScore = -10;
+        if (lineScore == -1) { //if a and b were O, this is a bad line, set score to -15 this gives a block more weight
+           lineScore = -15;
         } else if (lineScore == 1) { //if a was X and b was 0 return zero, no win possible on this line
            return 0;
         } else { //if a empty and b O, set to -1 starting off bad for this line
