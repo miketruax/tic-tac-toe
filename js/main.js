@@ -60,8 +60,20 @@ function initialize(){
     currentBoard = [0,0,0,0,0,0,0,0,0]; //resets board
     availMoves = [0,1,2,3,4,5,6,7,8];
     moveCount = 0; //resets move count to 0 for checking for Tie
+    $('.box').on('mouseenter', highlightXO);
+    $('.box').on('mouseleave', removeXO);
   });
 }
+  var highlightXO = function(){ // highlights X or O depending on active player
+    if(!$(this).hasClass('box-filled-1') && !$(this).hasClass('box-filled-2')){
+        activePlayer ==1 ? $(this).css("background-image", 'url(img/o.svg)'): $(this).css("background-image", 'url(img/x.svg)');
+    }
+  }
+  var removeXO = function(){ //removes background image after mouse leave
+    if(!$(this).hasClass('box-filled-1') && !$(this).hasClass('box-filled-2')){
+        $(this).css("background", '');
+    }
+  }
 
   var placeMove = function(){ //allows placement of X or O
     //ensures you're not able to click an overwrite a play
@@ -96,7 +108,6 @@ function initialize(){
       }
       currentBoard[availMoves[i]] = 0; //resets the move to test a different one
     }
-      console.log('----------------------');
      $('.boxes').children()[availMoves[index]].click(); //clicks the box that resulted in highest line scores
 
     function evaluateTotalScore(){ //goes through line by line to get sum of score
@@ -109,7 +120,6 @@ function initialize(){
       score += checkLine(2,5,8); //checks vertical line
       score += checkLine(0,4,8); //checks diagonal line
       score += checkLine(2,4,6); //checks diagonal line
-      console.log(score);
       return score; //returns score for comparison
     };
 
@@ -143,7 +153,9 @@ function initialize(){
            lineScore = 1; // if first was empty and this was X score to 1 as a win is possible
         }
      } else if (currentBoard[b] == 1) { //if b was O
-        if (lineScore == -1) { //if a and b were O, this is a bad line, set score to -15 this gives a block more weight
+       //if a and b were O, this is a bad line, set score to -15 this gives a block more weight
+       //and allows for only a single passthrough as opposed to going down multiple branches
+        if (lineScore == -1) {
            lineScore = -15;
         } else if (lineScore == 1) { //if a was X and b was 0 return zero, no win possible on this line
            return 0;
