@@ -27,8 +27,7 @@ var againstPlayer; //whether or not it's against player or AI
 var activePlayer; //active player
 var nameOne; //first players Name
 var nameTwo; //second players Name
-var moveCount;
-var boardState;
+var currentBoard;
 var availMoves;
 
 var toStart = function(){ //resets to the start page and adds event listeners
@@ -38,15 +37,15 @@ var toStart = function(){ //resets to the start page and adds event listeners
     $('.computer').on('click', function(){ //if computer clicked, will use AI for playing
       againstPlayer = false;
       initialize(); //starts board
-      nameOne = prompt('Please enter Your Name:');
-      nameTwo = 'SkyNet';
+      nameOne = prompt('Please enter Your Name:'); //prompts for only one player's name
+      nameTwo = 'SkyNet'; //computer is always named SkyNet... always watching...
     });
 
     $('.player').on('click',function(){ //allows two human players
       initialize(); //starts board
       againstPlayer = true;
-      nameOne = prompt('Please enter Player One\'s Name:');
-      nameTwo = prompt('Please enter Player Two\'s Name:');
+      nameOne = prompt('Please enter Player One\'s Name:'); //prompts for first players name
+      nameTwo = prompt('Please enter Player Two\'s Name:'); //prompts for second players name
     });
   });
 };
@@ -58,7 +57,7 @@ function initialize(){
     $('.player1').addClass('active'); //in case of restart
     $('.player2').removeClass('active'); //in case of restart resets starting player
     activePlayer = 1; //starts back with active player being 1
-    boardState = [0,0,0,0,0,0,0,0,0]; //resets board
+    currentBoard = [0,0,0,0,0,0,0,0,0]; //resets board
     availMoves = [0,1,2,3,4,5,6,7,8];
     moveCount = 0; //resets move count to 0 for checking for Tie
   });
@@ -74,12 +73,10 @@ function initialize(){
 
       }
       if(activePlayer ===2 && !againstPlayer && checkWinner()===0){ //auto plays if against computer
-          minMax = [];
           computerMove();
-
         }
-      if (checkWinner() !== 0){
-        endGame(checkWinner());
+      if (checkWinner() !== 0){ //if winner is 1 (player 1), 2(player 2), or 3(tie) ends game
+        endGame(checkWinner()); //ends game with winner value
       }
 
     };
@@ -89,7 +86,7 @@ function initialize(){
     var index; //to save index for later use
 
     for(var i=0; i<availMoves.length; i++){
-      boardState[availMoves[i]] = 2; //makes a move for outcome testing
+      currentBoard[availMoves[i]] = 2; //makes a move for outcome testing
       var score = evaluateTotalScore();
       //compares potential play to base score of -10000 this is on the offchance all
       //moves are bad. It will then pick the least bad of the bunch
@@ -97,7 +94,7 @@ function initialize(){
         highestScore = score; //if higher, this becomes the best play
         index = i; //saves index to click box after all passes
       }
-      boardState[availMoves[i]] = 0; //resets the move to test a different one
+      currentBoard[availMoves[i]] = 0; //resets the move to test a different one
     }
      $('.boxes').children()[availMoves[index]].click(); //clicks the box that resulted in highest line scores
 
@@ -128,80 +125,82 @@ function initialize(){
     function checkLine(a, b, c) {
       var lineScore = 0;
 
-     if (boardState[a] == 2) {
-        lineScore = 1;
-     } else if (boardState[a] == 1) {
-        lineScore = -1;
+     if (currentBoard[a] == 2) { //starting with first in line
+        lineScore = 1; //if it contains an X, plus a point
+     } else if (currentBoard[a] == 1) {
+        lineScore = -1; //if it contains an O, minus one point
      }
 
 
-     if (boardState[b] == 2) {
-        if (lineScore == 1) {
+     if (currentBoard[b] == 2) { //assuming second was X
+        if (lineScore == 1) { //if both points a and b were X, this is a good line, goto 10
            lineScore = 10;
-        } else if (lineScore == -1) {
-           return 0;
+        } else if (lineScore == -1) { // if first in line was X and second O, cancel each other out
+           return 0; //line will be a wash as there can be no win for either on this line
         } else {
-           lineScore = 1;
+           lineScore = 1; // if first was empty and this was X score to 1 as a win is possible
         }
-     } else if (boardState[b] == 1) {
-        if (lineScore == -1) {
+     } else if (currentBoard[b] == 1) { //if b was O
+        if (lineScore == -1) { //if a and b were O, this is a bad line, set score to -10
            lineScore = -10;
-        } else if (lineScore == 1) {
+        } else if (lineScore == 1) { //if a was X and b was 0 return zero, no win possible on this line
            return 0;
-        } else {
+        } else { //if a empty and b O, set to -1 starting off bad for this line
            lineScore = -1;
         }
      }
 
-     if (boardState[c] == 2) {
+     if (currentBoard[c] == 2) { //assuming c is X
+       //if there's one X it goes to 10 (better play) or if 2X's already it goes to 100 with the 3rd X here
         if (lineScore > 0) {
            lineScore *= 10;
-        } else if (lineScore < 0) {
+        } else if (lineScore < 0) { //if -10 for 2 O's or -1 for 1 O with this X the line is dead, return 0
            return 0;
-        } else {
+        } else { //if no points so far, it means blank, blank, X so return 1. This might be a good line
            lineScore = 1;
         }
-     } else if (boardState[c] == 1) {
+     } else if (currentBoard[c] == 1) { //assuming x is 0
+       //if it's a bad line already, it moves from -1 -> -10 or -10 -> -100 (although not possible techincally as the game would have ended)
         if (lineScore < 0) {
            lineScore *= 10;
-        } else if (lineScore > 1) {
-           return 0;
+        } else if (lineScore > 1) { //if it's a positive line (1 for 1 X or 10 for 2 X's)
+           return 0; //return zero as this is a dead line. No points for either side.
         } else {
-           lineScore = -1;
+           lineScore = -1; //if others were blank, this becomes a line with only 1 O
         }
      }
-     return lineScore;
+     return lineScore; //if it wasn't already, return the score for this line
   }
 
   };
   var updateBoard = function(item){ //updates the board
-    boardState[item] = activePlayer;
-    index = availMoves.indexOf(item);
+    currentBoard[item] = activePlayer; // sets played spot to 1 or 2 based off player
+    index = availMoves.indexOf(item); // finds the play just made
+    // unneeded really but still good practice as it's usually needed for an index splice
     if(index>-1){
-      availMoves.splice(index, 1);
+      availMoves.splice(index, 1); //removes the one just played form possible moves
     }
-    moveCount++;
   };
 
 
   var checkWinner = function() { //takes current board setup and checks for winner
       for(i=0; i<9; i+=3){ //checks for horizontal lines
-          if(boardState[i] === boardState[i+1] && boardState[i] === boardState[i+2] && boardState[i] !== 0){
-              return(boardState[i]);
+          if(currentBoard[i] === currentBoard[i+1] && currentBoard[i] === currentBoard[i+2] && currentBoard[i] !== 0){
+              return(currentBoard[i]);
           }
         }
         for(i=0; i<3; i++){ //checks for horizontal lines
-            if(boardState[i] === boardState[i+3] && boardState[i] === boardState[i+6] && boardState[i] !== 0){
-                return(boardState[i]);
+            if(currentBoard[i] === currentBoard[i+3] && currentBoard[i] === currentBoard[i+6] && currentBoard[i] !== 0){
+                return(currentBoard[i]); //return either 1 or 2 (for player that matched)
             }
           }
-      if(boardState[0] === boardState[4] && boardState[0] === boardState[8] && boardState[4] !== 0){ //checks one diagonal
-          return(boardState[4]);
+      if(currentBoard[0] === currentBoard[4] && currentBoard[0] === currentBoard[8] && currentBoard[4] !== 0){ //checks one diagonal
+          return(currentBoard[4]); //return either 1 or 2 (for player that matched)
       }
-      if(boardState[2] === boardState[4] && boardState[2] === boardState[6] && boardState[4] !== 0){//checks one diagonal
-          return(boardState[4]);
+      if(currentBoard[2] === currentBoard[4] && currentBoard[2] === currentBoard[6] && currentBoard[4] !== 0){//checks one diagonal
+          return(currentBoard[4]); //return either 1 or 2 (for player that matched)
       }
-      if (moveCount === 9){ return 3;}
+      if (!availMoves.length){ return 3;} //if no moves left and there's no winner,  it's a tie
     return 0;
   };
 
@@ -211,22 +210,23 @@ function initialize(){
     $('document').ready(function(){
       //ensures loaded before adding event listeners and adjusting html
       //shoudln't be needed really but hey.
-      if (winner ===1) {
+      if (winner ===1) { //assuming first player won
+        // if a valid name was entered, display name with wins! otherwise display Winner!
         nameOne ? $('.message').html(nameOne+' wins!'): $('.message').html('Winner!');
-        $('.screen-win').addClass('screen-win-one');
+        $('.screen-win').addClass('screen-win-one'); //change to display winning page
       }
-      else if(winner===2)
+      else if(winner===2) //same as above for winner ===1
       {
         nameTwo ? $('.message').html(nameTwo+' wins!'): $('.message').html('Winner!');
         $('.screen-win').addClass('screen-win-two');
       }
-      else if(winner===3) {
+      else if(winner===3) { // in case of a tie, display such and tie screen
         $('.message').html('It\'s a Tie!');
         $('.screen-win').addClass('screen-win-tie');
         }
-      $('.button').on('click', toStart);
+      $('.button').on('click', toStart); // new start button!
     });
   };
 
-toStart();
+toStart(); //start it up!
 }());
