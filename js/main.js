@@ -5,7 +5,7 @@ function getText(file, variable)
     var txtDoc = new XMLHttpRequest();
     txtDoc.open("GET", 'html_snippets/'+file, false);
     variable = rawFile.responseText;
-    txtDoc.send(null);
+    txtDoc.send();
 }
 then just call it as:
 getText('start.txt', $start);
@@ -58,8 +58,7 @@ function initialize(){
     $('.player2').removeClass('active'); //in case of restart resets starting player
     activePlayer = 1; //starts back with active player being 1
     currentBoard = [0,0,0,0,0,0,0,0,0]; //resets board
-    availMoves = [0,1,2,3,4,5,6,7,8];
-    moveCount = 0; //resets move count to 0 for checking for Tie
+    availMoves = [0,1,2,3,4,5,6,7,8]; //resets to blank board state
     $('.box').on('mouseenter', highlightXO);
     $('.box').on('mouseleave', removeXO);
   });
@@ -68,12 +67,12 @@ function initialize(){
     if(!$(this).hasClass('box-filled-1') && !$(this).hasClass('box-filled-2')){
         activePlayer ==1 ? $(this).css("background-image", 'url(img/o.svg)'): $(this).css("background-image", 'url(img/x.svg)');
     }
-  }
+  };
   var removeXO = function(){ //removes background image after mouse leave
     if(!$(this).hasClass('box-filled-1') && !$(this).hasClass('box-filled-2')){
         $(this).css("background", '');
     }
-  }
+  };
 
   var placeMove = function(){ //allows placement of X or O
     //ensures you're not able to click an overwrite a play
@@ -110,7 +109,7 @@ function initialize(){
     }
      $('.boxes').children()[availMoves[index]].click(); //clicks the box that resulted in highest line scores
 
-    function evaluateTotalScore(){ //goes through line by line to get sum of score
+    var evaluateTotalScore = function(){ //goes through line by line to get sum of score
       var score = 0;
       score += checkLine(0,1,2); //checks horizontal line
       score += checkLine(3,4,5); //checks horizontal line
@@ -189,7 +188,7 @@ function initialize(){
   };
   var updateBoard = function(item){ //updates the board
     currentBoard[item] = activePlayer; // sets played spot to 1 or 2 based off player
-    index = availMoves.indexOf(item); // finds the play just made
+    var index = availMoves.indexOf(item); // finds the play just made
     // unneeded really but still good practice as it's usually needed for an index splice
     if(index>-1){
       availMoves.splice(index, 1); //removes the one just played form possible moves
