@@ -59,7 +59,7 @@ var toStart = function(){ //resets to the start page and adds event listeners
   });
 };
 
-function initialize(){
+var initialize = function(){
   nameOne = $('#playOne').val(); //saves player 1 and 2s names
   nameTwo = $('#playTwo').val();
   $('body').html($board); //sets board up initially
