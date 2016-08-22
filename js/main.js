@@ -32,6 +32,24 @@ var nameTwo; //second players Name
 var currentBoard;
 var availMoves;
 
+var initialize = function(){
+  nameOne = $('#playOne').val(); //saves player 1 and 2s names
+  nameTwo = $('#playTwo').val();
+  $('body').html($board); //sets board up initially
+  $('document').ready(function(){
+  $('#O').html(nameOne); //shows players names 1 and two
+  $('#X').html(nameTwo);
+    $('.box').on('click', placeMove); //addsEventlisteners to ensure click funcionality works
+    $('.player1').addClass('active'); //in case of restart
+    $('.player2').removeClass('active'); //in case of restart resets starting player
+    activePlayer = 1; //starts back with active player being 1
+    currentBoard = [0,0,0,0,0,0,0,0,0]; //resets board
+    availMoves = [0,1,2,3,4,5,6,7,8]; //resets to blank board state
+    $('.box').on('mouseenter', highlightXO);
+    $('.box').on('mouseleave', removeXO);
+  });
+};
+
 var toStart = function(){ //resets to the start page and adds event listeners
   $('document').ready(function(){ //ensures all portions reloaded
     $('body').html($start);
@@ -59,23 +77,7 @@ var toStart = function(){ //resets to the start page and adds event listeners
   });
 };
 
-var initialize = function(){
-  nameOne = $('#playOne').val(); //saves player 1 and 2s names
-  nameTwo = $('#playTwo').val();
-  $('body').html($board); //sets board up initially
-  $('document').ready(function(){
-  $('#O').html(nameOne); //shows players names 1 and two
-  $('#X').html(nameTwo);
-    $('.box').on('click', placeMove); //addsEventlisteners to ensure click funcionality works
-    $('.player1').addClass('active'); //in case of restart
-    $('.player2').removeClass('active'); //in case of restart resets starting player
-    activePlayer = 1; //starts back with active player being 1
-    currentBoard = [0,0,0,0,0,0,0,0,0]; //resets board
-    availMoves = [0,1,2,3,4,5,6,7,8]; //resets to blank board state
-    $('.box').on('mouseenter', highlightXO);
-    $('.box').on('mouseleave', removeXO);
-  });
-}
+
   var highlightXO = function(){ // highlights X or O depending on active player
     if(!$(this).hasClass('box-filled-1') && !$(this).hasClass('box-filled-2')){
         activePlayer ==1 ? $(this).css("background-image", 'url(img/o.svg)'): $(this).css("background-image", 'url(img/x.svg)');
@@ -99,15 +101,13 @@ var initialize = function(){
         //upon what issues they might cause as I find the syntax to be visually appealing and so I prefer them
         // also it cuts down lines of code but less code doesn't always mean better coding so I was curious if I
         //should stop using them or just not use them in specific cases.
-
-      }
-      if(activePlayer ===2 && !againstPlayer && checkWinner()===0){ //auto plays if against computer
-          computerMove();
+        if(activePlayer ===2 && !againstPlayer && checkWinner()===0){ //auto plays if against computer
+            computerMove();
+          }
+        if (checkWinner() !== 0){ //if winner is 1 (player 1), 2(player 2), or 3(tie) ends game
+          endGame(checkWinner()); //ends game with winner value
         }
-      if (checkWinner() !== 0){ //if winner is 1 (player 1), 2(player 2), or 3(tie) ends game
-        endGame(checkWinner()); //ends game with winner value
       }
-
     };
 
     /*This function goes through the three cells input from above
@@ -224,8 +224,8 @@ var initialize = function(){
           }
         }
         for(var j=0; j<3; j++){ //checks for horizontal lines
-            if(currentBoard[i] === currentBoard[i+3] && currentBoard[i] === currentBoard[i+6] && currentBoard[i] !== 0){
-                return(currentBoard[i]); //return either 1 or 2 (for player that matched)
+            if(currentBoard[j] === currentBoard[j+3] && currentBoard[j] === currentBoard[j+6] && currentBoard[j] !== 0){
+                return(currentBoard[j]); //return either 1 or 2 (for player that matched)
             }
           }
       if(currentBoard[0] === currentBoard[4] && currentBoard[0] === currentBoard[8] && currentBoard[4] !== 0){ //checks one diagonal
