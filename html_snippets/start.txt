@@ -1,7 +1,18 @@
 <div class="screen screen-start" id="start">
   <header>
     <h1>Tic Tac Toe</h1>
+    <div class="againstWhom">
     <a href="#" class="button computer">Play Against Computer</a><br><br>
-    <a href="#" class="button">Start game</a>
+    <a href="#" class="button player">Play Against Player</a>
+    </div>
+    <div id="nameOne">
+      <label for="playOne" class="play1 playInput">Player One's Name:</label><input type="text" name="playOne" id="playOne" class="playInput">
+    </div>
+    <div id="nameTwo">
+      <label for="playTwo" class="play2  playInput">Player Two's Name:</label><input type="text" name="playTwo" id="playTwo" class="playInput">
+    </div>
+    <div class="startName">
+      <a href="#" class="button startName">Start</a>
+    </div>
   </header>
 </div>
